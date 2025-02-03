@@ -1,0 +1,25 @@
+name: jobby
+output: ~/jobby
+
+search:
+  providers:
+    # jobs hosted by app.recruiterbox.com
+    # where the key is the id for recruiterbox and the value is the company name
+    recruiter_box:
+      84170: Cascadia Consulting Company
+
+    # raw is for custom jsons that can be queried directly
+    # where the key is the company name and the value contains the info to query the job board
+    raw:
+      RRS:
+        url: https://recycle.pinpointhq.com/postings.json
+
+        # (optional) key to find list of jobs within json
+        data: data
+
+        # below is the 1-to-1 mapping of the id column to the json job key
+        # if a key is ommitted it is assumed to be the same as the output column
+        # ie: title is called title
+        uid: id
+        allows_remote: workplace_type
+        is_full_time: employment_type
