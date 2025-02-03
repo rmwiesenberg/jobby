@@ -27,17 +27,17 @@ class Provider(abc.ABC):
 class RawProvider(Provider):
     __key__ = "raw"
 
-    def __init__(self, name: str, url: str, keymaps: dict[str, str]):
+    def __init__(self, name: str, uri: str, keymaps: dict[str, str]):
         self.name = name
-        self.url = url
+        self.uri = uri
         self.keymaps = keymaps
 
     @classmethod
     def from_config(cls, key: str, data: dict[str, str]) -> "RawProvider":
-        return cls(key, data.pop("url"), keymaps=data)
+        return cls(name=key, uri=data.pop("uri"), keymaps=data)
 
     def get_jobs(self) -> Optional[pd.DataFrame]:
-        x = requests.get(self.url)
+        x = requests.get(self.uri)
 
         if x.status_code != 200:
             logging.error(f"{x.status_code} received from {self.__key__}")
@@ -59,6 +59,40 @@ class RawProvider(Provider):
 
             # noinspection PyTypeChecker
             jobs.append(dataclasses.asdict(Job(**data)))
+
+        return pd.DataFrame.from_records(jobs)
+
+
+class ADP(Provider):
+    __key__ = "adp"
+
+    def __init__(self, cid: str, name: str):
+        self.cid = cid
+        self.name = name
+
+    def get_uri(self):
+        return f"https://workforcenow.adp.com/mascsr/default/careercenter/public/events/staffing/v1/job-requisitions?cid={self.cid}"
+
+    @classmethod
+    def from_config(cls, key: str, data: str) -> "ADP":
+        return cls(cid=key, name=data)
+
+    def get_jobs(self) -> Optional[pd.DataFrame]:
+        x = requests.get(self.get_uri())
+
+        if x.status_code != 200:
+            logging.error(f"{x.status_code} received from {self.__key__}")
+            return None
+
+        jobs = []
+        for job in x.json()["jobRequisitions"]:
+            # noinspection PyTypeChecker
+            jobs.append(dataclasses.asdict(Job(
+                uid=f"{self.__key__}.{self.cid}.{job['itemID']}",
+                title=job["requisitionTitle"],
+                company=self.name,
+                location=""
+            )))
 
         return pd.DataFrame.from_records(jobs)
 

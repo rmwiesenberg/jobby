@@ -2,6 +2,11 @@ import copy
 from dataclasses import dataclass
 from typing import Optional
 
+import pandas as pd
+
+
+def make_empty_jobs_df() -> pd.DataFrame:
+    return pd.DataFrame(columns=list(Job.__annotations__.keys())).set_index("uid")
 
 @dataclass
 class Job:

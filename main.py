@@ -1,5 +1,4 @@
 import argparse
-import dataclasses
 import logging
 from pathlib import Path
 
@@ -7,9 +6,8 @@ import pandas as pd
 import tqdm
 
 from jobby.config import Config
-from jobby.job import Job
-from jobby.provider import Provider
-
+from jobby.diff import diff_job_dfs
+from jobby.job import make_empty_jobs_df
 
 def get_all_jobs(config: Config) -> pd.DataFrame:
     job_dfs = []
@@ -18,7 +16,7 @@ def get_all_jobs(config: Config) -> pd.DataFrame:
         if job_df is not None:
             job_dfs.append(job_df)
 
-    return (pd.concat(job_dfs) if job_dfs else pd.DataFrame(columns=list(Job.__annotations__.keys()))).set_index('uid')
+    return pd.concat(job_dfs).set_index('uid') if job_dfs else make_empty_jobs_df()
 
 
 def main():
@@ -27,9 +25,16 @@ def main():
     args = parser.parse_args()
 
     config = Config.load(args.config)
-    jobs = get_all_jobs(config)
 
-    jobs.to_csv(config.output_dir / "jobs.csv", index=True)
+    out_file = config.output_dir / "jobs.csv"
+    new_df = get_all_jobs(config)
+    old_df = pd.read_csv(out_file).set_index("uid") if out_file.exists() else make_empty_jobs_df()
+
+    jobs_df = diff_job_dfs(old_df=old_df, new_df=new_df)
+
+    jobs_df.to_csv(out_file, index=True)
+
+    logging.info(f"Wrote jobs to {out_file}")
 
 
 if __name__ == '__main__':

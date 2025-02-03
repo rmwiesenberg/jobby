@@ -1,18 +1,12 @@
 name: jobby
-output: ~/jobby
 
 search:
   providers:
-    # jobs hosted by app.recruiterbox.com
-    # where the key is the id for recruiterbox and the value is the company name
-    recruiter_box:
-      84170: Cascadia Consulting Company
-
     # raw is for custom jsons that can be queried directly
     # where the key is the company name and the value contains the info to query the job board
     raw:
       RRS:
-        url: https://recycle.pinpointhq.com/postings.json
+        uri: https://recycle.pinpointhq.com/postings.json
 
         # (optional) key to find list of jobs within json
         data: data
@@ -23,3 +17,13 @@ search:
         uid: id
         allows_remote: workplace_type
         is_full_time: employment_type
+
+    # jobs hosted by ADP
+    # where the key is the ADP company id and the value is the company name
+    adp:
+      a6cd8354-1238-4737-abb9-bcdf28df3c1c: EcoEngineers
+
+    # jobs hosted by app.recruiterbox.com
+    # where the key is the recruiterbox company id and the value is the company name
+    recruiter_box:
+      84170: Cascadia Consulting Company

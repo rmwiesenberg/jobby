@@ -45,6 +45,6 @@ class Config:
 
         return Config(
             name=config.get("name", "jobby"),
-            output_dir=Path(config.get("output_dir", Path.cwd())),
+            output_dir=Path(config.get("output", Path.cwd())).expanduser().resolve(),
             providers=providers
         )
